@@ -157,7 +157,7 @@
               <td class="py-3 pl-2">
                 {{ $loop->iteration }}
               </td>
-              <td class="py-3 pl-2 capitalize">
+              <td class="py-3 pl-2">
                   {{ $filemedia->name }}
               </td>
               <td class="py-3 pl-2">
