@@ -77,7 +77,7 @@
                         </div>
                     </div>
                     
-                    <input type="hidden" name="token" value="{{ Str::random(6) }}">
+                    <input type="hidden" name="token" value="{{ random_int(100000, 999999) }}">
                     <input type="hidden" name="active" value="0">
 
                     <div class="flex gap-2 ml-24 mt-6">
