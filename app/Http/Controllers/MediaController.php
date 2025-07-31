@@ -92,13 +92,13 @@ class MediaController extends Controller
 
     public function uploadFile(Request $request)
     {
-        if (!$request->input('image')) {
+        if ($request->input('image') && !$request->input('audio')) {
             $request->validate([
                 'imageFile' => 'required',
             ]);
         }
 
-        if (!$request->input('audio')) {
+        if ($request->input('audio') && !$request->input('image')) {
             $request->validate([
                 'audioFile' => 'required',
             ]);
