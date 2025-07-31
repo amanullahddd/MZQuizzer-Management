@@ -92,31 +92,47 @@ class MediaController extends Controller
 
     public function uploadFile(Request $request)
     {
-        if ($request->input('image')) {
-            $request->validate([
-                'imageFile' => 'required',
-            ]);
+
+        $isImageInputTrue = (bool) $request->input('image');
+        $isAudioInputTrue = (bool) $request->input('audio');
+        $isFmImageInputTrue = (bool) $request->input('fmImage');
+        $isFmAudioInputTrue = (bool) $request->input('fmAudio');
+
+        $rules = [
+            'imageFile' => 'file|mimes:png|max:2048', // Maksimum 2MB untuk PNG
+            'audioFile' => 'file|mimes:ogg,wav|max:2048', // Maksimum 2MB untuk OGG atau WAV
+        ];
+
+        if (!($isFmImageInputTrue && $isFmAudioInputTrue)) {
+            // Jika kondisi pengecualian TIDAK terpenuhi (yaitu, fmImage dan fmAudio TIDAK keduanya true),
+            // maka kita terapkan logika 'required' berdasarkan 'image' dan 'audio'.
+
+            // Kondisi 1: Hanya 'image' yang true (dan pengecualian tidak berlaku), maka 'imageFile' required.
+            if ($isImageInputTrue) { // Tidak perlu cek !$isAudioInputTrue lagi di sini
+                $rules['imageFile'] = 'required|' . $rules['imageFile'];
+            }
+
+            // Kondisi 2: Hanya 'audio' yang true (dan pengecualian tidak berlaku), maka 'audioFile' required.
+            if ($isAudioInputTrue) { // Tidak perlu cek !$isImageInputTrue lagi di sini
+                $rules['audioFile'] = 'required|' . $rules['audioFile'];
+            }
         }
 
-        if ($request->input('audio')) {
-            $request->validate([
-                'audioFile' => 'required',
-            ]);
-        }
 
-        if ($request->input('fmImage') && $request->input('fmAudio')) {
-            $request->validate([
-                'imageFile' => 'nullable',
-            ]);
-            $request->validate([
-                'audioFile' => 'nullable',
-            ]);
-        }
-        // Validasi input file
-        $validated = $request->validate([
-            'imageFile' => 'file|mimes:png|max:2048', // Maksimum 2MB untuk file PNG
-            'audioFile' => 'file|mimes:ogg,wav|max:2048', // Maksimum 2MB untuk file OGG atau WAV
-        ]);
+        // Jalankan semua validasi sekaligus
+        $validatedData = $request->validate($rules);
+
+        // if ($request->input('image')) {
+        //     $request->validate([
+        //         'imageFile' => 'required',
+        //     ]);
+        // }
+
+        // if ($request->input('audio')) {
+        //     $request->validate([
+        //         'audioFile' => 'required',
+        //     ]);
+        // }
 
         // Direktori untuk menyimpan file
         $imageDirectory = 'uploads/image/';
