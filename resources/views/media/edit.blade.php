@@ -16,8 +16,14 @@
                     @if($question->image) 
                         <input type="hidden" name="image" value="1">
                     @endif
+                    @if($question->filemedias->where('type', 'image')->first()) 
+                        <input type="hidden" name="fmImage" value="1">
+                    @endif
                     @if($question->audio) 
                         <input type="hidden" name="audio" value="1">
+                    @endif
+                    @if($question->filemedias->where('type', 'audio')->first()) 
+                        <input type="hidden" name="fmAudio" value="1">
                     @endif
 
                     <div class="flex items-center gap-4 my-4">

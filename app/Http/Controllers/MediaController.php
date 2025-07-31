@@ -92,18 +92,26 @@ class MediaController extends Controller
 
     public function uploadFile(Request $request)
     {
-        if ($request->input('image') && !$request->input('audio')) {
+        if ($request->input('image')) {
             $request->validate([
                 'imageFile' => 'required',
             ]);
         }
 
-        if ($request->input('audio') && !$request->input('image')) {
+        if ($request->input('audio')) {
             $request->validate([
                 'audioFile' => 'required',
             ]);
         }
 
+        if ($request->input('fmImage') && $request->input('fmAudio')) {
+            $request->validate([
+                'imageFile' => 'nullable',
+            ]);
+            $request->validate([
+                'audioFile' => 'nullable',
+            ]);
+        }
         // Validasi input file
         $validated = $request->validate([
             'imageFile' => 'file|mimes:png|max:2048', // Maksimum 2MB untuk file PNG
