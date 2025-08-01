@@ -44,124 +44,116 @@
                     </div>
 
                     <div class="flex flex-col my-4">
-                        <label for="questions[{{ $i }}][answer_2]">Choice Option 2</label>
-                        <input
-                            type="text"
-                            name="questions[{{ $i }}][answer_2]"
-                            id="questions[{{ $i }}][answer_2]"
-                            value="{{ old('questions.' . $i . '.answer_2') }}"
-                            class="flex-1 py-1 border-gray-300 mt-1 rounded focus:border-gray-300 focus:outline-none focus:ring-0"
-                            placeholder="Write the choice option 2 for the question"
-                        >
-                        @error('questions.' . $i . '.answer_2')
-                            <p class="text-sm text-red-600 font-bold mt-2">{{ $message }}</p>
-                        @enderror
-                    </div>
+    <label for="answer_2" class="block text-gray-700 text-sm font-medium mb-1">Choice Option 2</label>
+    <input
+        name="answer_2"
+        id="answer_2"
+        value="{{ old('answer_2') }}"
+        class="flex-1 py-1 border-gray-300 mt-1 rounded focus:border-gray-300 focus:outline-none focus:ring-0"
+        placeholder="Write the choice option 2 for the question (opsional)"
+    >
+    @error('answer_2')
+        <p class="text-sm text-red-600 font-bold mt-2">{{ $message }}</p>
+    @enderror
+</div>
 
-                    <div class="flex flex-col my-4">
-                        <label for="questions[{{ $i }}][why_a2]">Why Choice Option 2 is Wrong</label>
-                        <input
-                            type="text"
-                            name="questions[{{ $i }}][why_a2]"
-                            id="questions[{{ $i }}][why_a2]"
-                            value="{{ old('questions.' . $i . '.why_a2') }}"
-                            class="flex-1 py-1 border-gray-300 mt-1 rounded focus:border-gray-300 focus:outline-none focus:ring-0"
-                            placeholder="Write the explanation (optional)"
-                        >
-                        @error('questions.' . $i . '.why_a2')
-                            <p class="text-sm text-red-600 font-bold mt-2">{{ $message }}</p>
-                        @enderror
-                    </div>
+<div class="flex flex-col my-4 p-4 border border-gray-200 rounded-lg bg-gray-50"> {{-- Tambahan styling untuk membedakan blok --}}
+    <label for="why_a2" class="block text-gray-700 text-sm font-bold mb-1">Why Choice Option 2 is Wrong</label> {{-- Label lebih tebal --}}
+    <textarea
+        name="why_a2"
+        id="why_a2"
+        rows="3" {{-- Mengatur tinggi textarea --}}
+        class="flex-1 py-1 border-gray-300 mt-1 rounded focus:border-gray-300 focus:outline-none focus:ring-0 resize-y" {{-- resize-y agar bisa diresize vertikal --}}
+        placeholder="Write the explanation (opsional)"
+    >{{ old('why_a2') }}</textarea> {{-- Value di dalam tag textarea --}}
+    @error('why_a2')
+        <p class="text-sm text-red-600 font-bold mt-2">{{ $message }}</p>
+    @enderror
+</div>
 
-                    <div class="flex flex-col my-4">
-                        <label for="questions[{{ $i }}][answer_3]">Choice Option 3</label>
-                        <input
-                            type="text"
-                            name="questions[{{ $i }}][answer_3]"
-                            id="questions[{{ $i }}][answer_3]"
-                            value="{{ old('questions.' . $i . '.answer_3') }}"
-                            class="flex-1 py-1 border-gray-300 mt-1 rounded focus:border-gray-300 focus:outline-none focus:ring-0"
-                            placeholder="Write the choice option 3 for the question"
-                        >
-                        @error('questions.' . $i . '.answer_3')
-                            <p class="text-sm text-red-600 font-bold mt-2">{{ $message }}</p>
-                        @enderror
-                    </div>
+<div class="flex flex-col my-4">
+    <label for="answer_3" class="block text-gray-700 text-sm font-medium mb-1">Choice Option 3</label>
+    <input
+        name="answer_3"
+        id="answer_3"
+        value="{{ old('answer_3') }}"
+        class="flex-1 py-1 border-gray-300 mt-1 rounded focus:border-gray-300 focus:outline-none focus:ring-0"
+        placeholder="Write the choice option 3 for the question (opsional)"
+    >
+    @error('answer_3')
+        <p class="text-sm text-red-600 font-bold mt-2">{{ $message }}</p>
+    @enderror
+</div>
 
-                    <div class="flex flex-col my-4">
-                        <label for="questions[{{ $i }}][why_a3]">Why Choice Option 3 is Wrong</label>
-                        <input
-                            type="text"
-                            name="questions[{{ $i }}][why_a3]"
-                            id="questions[{{ $i }}][why_a3]"
-                            value="{{ old('questions.' . $i . '.why_a3') }}"
-                            class="flex-1 py-1 border-gray-300 mt-1 rounded focus:border-gray-300 focus:outline-none focus:ring-0"
-                            placeholder="Write the explanation (optional)"
-                        >
-                        @error('questions.' . $i . '.why_a3')
-                            <p class="text-sm text-red-600 font-bold mt-2">{{ $message }}</p>
-                        @enderror
-                    </div>
+<div class="flex flex-col my-4 p-4 border border-gray-200 rounded-lg bg-gray-50"> {{-- Tambahan styling untuk membedakan blok --}}
+    <label for="why_a3" class="block text-gray-700 text-sm font-bold mb-1">Why Choice Option 3 is Wrong</label> {{-- Label lebih tebal --}}
+    <textarea
+        name="why_a3"
+        id="why_a3"
+        rows="3" {{-- Mengatur tinggi textarea --}}
+        class="flex-1 py-1 border-gray-300 mt-1 rounded focus:border-gray-300 focus:outline-none focus:ring-0 resize-y" {{-- resize-y agar bisa diresize vertikal --}}
+        placeholder="Write the explanation (opsional)"
+    >{{ old('why_a3') }}</textarea> {{-- Value di dalam tag textarea --}}
+    @error('why_a3')
+        <p class="text-sm text-red-600 font-bold mt-2">{{ $message }}</p>
+    @enderror
+</div>
 
-                    <div class="flex flex-col my-4">
-                        <label for="questions[{{ $i }}][answer_4]">Choice Option 4</label>
-                        <input
-                            type="text"
-                            name="questions[{{ $i }}][answer_4]"
-                            id="questions[{{ $i }}][answer_4]"
-                            value="{{ old('questions.' . $i . '.answer_4') }}"
-                            class="flex-1 py-1 border-gray-300 mt-1 rounded focus:border-gray-300 focus:outline-none focus:ring-0"
-                            placeholder="Write the choice option 4 for the question"
-                        >
-                        @error('questions.' . $i . '.answer_4')
-                            <p class="text-sm text-red-600 font-bold mt-2">{{ $message }}</p>
-                        @enderror
-                    </div>
+<div class="flex flex-col my-4">
+    <label for="answer_4" class="block text-gray-700 text-sm font-medium mb-1">Choice Option 4</label>
+    <input
+        name="answer_4"
+        id="answer_4"
+        value="{{ old('answer_4') }}"
+        class="flex-1 py-1 border-gray-300 mt-1 rounded focus:border-gray-300 focus:outline-none focus:ring-0"
+        placeholder="Write the choice option 4 for the question (opsional)"
+    >
+    @error('answer_4')
+        <p class="text-sm text-red-600 font-bold mt-2">{{ $message }}</p>
+    @enderror
+</div>
 
-                    <div class="flex flex-col my-4">
-                        <label for="questions[{{ $i }}][why_a4]">Why Choice Option 4 is Wrong</label>
-                        <input
-                            type="text"
-                            name="questions[{{ $i }}][why_a4]"
-                            id="questions[{{ $i }}][why_a4]"
-                            value="{{ old('questions.' . $i . '.why_a4') }}"
-                            class="flex-1 py-1 border-gray-300 mt-1 rounded focus:border-gray-300 focus:outline-none focus:ring-0"
-                            placeholder="Write the explanation (optional)"
-                        >
-                        @error('questions.' . $i . '.why_a4')
-                            <p class="text-sm text-red-600 font-bold mt-2">{{ $message }}</p>
-                        @enderror
-                    </div>
+<div class="flex flex-col my-4 p-4 border border-gray-200 rounded-lg bg-gray-50"> {{-- Tambahan styling untuk membedakan blok --}}
+    <label for="why_a4" class="block text-gray-700 text-sm font-bold mb-1">Why Choice Option 4 is Wrong</label> {{-- Label lebih tebal --}}
+    <textarea
+        name="why_a4"
+        id="why_a4"
+        rows="3" {{-- Mengatur tinggi textarea --}}
+        class="flex-1 py-1 border-gray-300 mt-1 rounded focus:border-gray-300 focus:outline-none focus:ring-0 resize-y" {{-- resize-y agar bisa diresize vertikal --}}
+        placeholder="Write the explanation (opsional)"
+    >{{ old('why_a4') }}</textarea> {{-- Value di dalam tag textarea --}}
+    @error('why_a4')
+        <p class="text-sm text-red-600 font-bold mt-2">{{ $message }}</p>
+    @enderror
+</div>
 
-                    <div class="flex flex-col my-4">
-                        <label for="questions[{{ $i }}][answer_5]">Choice Option 5</label>
-                        <input
-                            type="text"
-                            name="questions[{{ $i }}][answer_5]"
-                            id="questions[{{ $i }}][answer_5]"
-                            value="{{ old('questions.' . $i . '.answer_5') }}"
-                            class="flex-1 py-1 border-gray-300 mt-1 rounded focus:border-gray-300 focus:outline-none focus:ring-0"
-                            placeholder="Write the choice option 5 for the question"
-                        >
-                        @error('questions.' . $i . '.answer_5')
-                            <p class="text-sm text-red-600 font-bold mt-2">{{ $message }}</p>
-                        @enderror
-                    </div>
+<div class="flex flex-col my-4">
+    <label for="answer_5" class="block text-gray-700 text-sm font-medium mb-1">Choice Option 5</label>
+    <input
+        name="answer_5"
+        id="answer_5"
+        value="{{ old('answer_5') }}"
+        class="flex-1 py-1 border-gray-300 mt-1 rounded focus:border-gray-300 focus:outline-none focus:ring-0"
+        placeholder="Write the choice option 5 for the question (opsional)"
+    >
+    @error('answer_5')
+        <p class="text-sm text-red-600 font-bold mt-2">{{ $message }}</p>
+    @enderror
+</div>
 
-                    <div class="flex flex-col my-4">
-                        <label for="questions[{{ $i }}][why_a5]">Why Choice Option 5 is Wrong</label>
-                        <input
-                            type="text"
-                            name="questions[{{ $i }}][why_a5]"
-                            id="questions[{{ $i }}][why_a5]"
-                            value="{{ old('questions.' . $i . '.why_a5') }}"
-                            class="flex-1 py-1 border-gray-300 mt-1 rounded focus:border-gray-300 focus:outline-none focus:ring-0"
-                            placeholder="Write the explanation (optional)"
-                        >
-                        @error('questions.' . $i . '.why_a5')
-                            <p class="text-sm text-red-600 font-bold mt-2">{{ $message }}</p>
-                        @enderror
-                    </div>
+<div class="flex flex-col my-4 p-4 border border-gray-200 rounded-lg bg-gray-50"> {{-- Tambahan styling untuk membedakan blok --}}
+    <label for="why_a5" class="block text-gray-700 text-sm font-bold mb-1">Why Choice Option 5 is Wrong</label> {{-- Label lebih tebal --}}
+    <textarea
+        name="why_a5"
+        id="why_a5"
+        rows="3" {{-- Mengatur tinggi textarea --}}
+        class="flex-1 py-1 border-gray-300 mt-1 rounded focus:border-gray-300 focus:outline-none focus:ring-0 resize-y" {{-- resize-y agar bisa diresize vertikal --}}
+        placeholder="Write the explanation (opsional)"
+    >{{ old('why_a5') }}</textarea> {{-- Value di dalam tag textarea --}}
+    @error('why_a5')
+        <p class="text-sm text-red-600 font-bold mt-2">{{ $message }}</p>
+    @enderror
+</div>
                 </div>
             @endforeach
 
