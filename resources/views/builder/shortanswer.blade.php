@@ -7,7 +7,7 @@
         <div>
             <h4 class="text-xl capitalize">Design Short Answer Question</h4>
             <div class="mt-6">
-                <form id="createForm" action="{{ route('builder.store_shortanswer') }}" method="POST">
+                <form id="createForm" action="{{ route('builder.store_shortanswer') }}" method="POST" enctype="multipart/form-data">
                     @csrf <!-- Token untuk keamanan CSRF -->
 
                     <div class="flex flex-col my-4">
@@ -156,7 +156,7 @@
                         </div>
                     </div>
                     
-                    <div class="flex flex-col my-4">
+                    {{-- <div class="flex flex-col my-4">
                         <label for="audio">Audio</label>
                             <label for="audio_0">
                                 <input 
@@ -204,7 +204,7 @@
                                 class="w-3/4 rounded-lg border border-gray-300 shadow-sm">
                             </audio>
                         </div>
-                    </div>
+                    </div> --}}
 
                     <div class="flex flex-col my-4">
                         <label for="answer">Correct Answer</label>

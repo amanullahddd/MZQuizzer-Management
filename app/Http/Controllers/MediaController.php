@@ -481,75 +481,122 @@ class MediaController extends Controller
     public function synchronizeFile()
     {
         try {
-            // Cek log sinkronisasi terakhir
-            $lastSync = Synclog::where('process_name', 'filemedias')->first();
-
-            if ($lastSync && $lastSync->last_synced_at > now()->subHour()) {
-                return response()->json([
-                    'status' => 'info',
-                    'message' => 'Sinkronisasi sudah dilakukan baru-baru ini, coba lagi nanti.'
-                ]);
-            }
-
-            // 1. Baca Direktori
+            // -- 1. Ambil data dari penyimpanan dan database --
+            // Get all files from the image and audio directories.
             $imageDirectory = public_path('uploads/image');
             $audioDirectory = public_path('uploads/audio');
+
+            // Check if directories exist to prevent errors.
+            if (!File::isDirectory($imageDirectory)) {
+                File::makeDirectory($imageDirectory, 0755, true);
+            }
+            if (!File::isDirectory($audioDirectory)) {
+                File::makeDirectory($audioDirectory, 0755, true);
+            }
+
             $existingFiles = array_merge(
                 File::files($imageDirectory),
                 File::files($audioDirectory)
             );
             $existingFileNames = array_map('basename', $existingFiles);
 
-            // 2. Ambil Data Database
-            $fileMedias = Filemedia::all()->keyBy('name');
-            $questionMedias = Questionmedia::pluck('id', 'guid');
+            // Get all records from the Filemedia and Questionmedia tables.
+            // Kita ambil semua data questionmedia untuk mempermudah pengecekan flag image/audio.
+            // We'll get all questionmedia data to easily check the image/audio flags.
+            $fileMedias = Filemedia::all();
+            $questionMedias = Questionmedia::all()->keyBy('guid');
 
             $addedFiles = [];
             $deletedFiles = [];
             $updatedFiles = [];
 
-            // 3. Sinkronisasi Penyimpanan dan Database (Mirip syncFileStorage)
+            // -- 2. Sinkronisasi File Fisik dengan Tabel Filemedia --
+            // Sync physical files with the `filemedias` table.
+            // Check for files on disk that are not in the database.
             foreach ($existingFileNames as $fileName) {
-                if (!isset($fileMedias[$fileName])) {
-                    $fileType = strpos($fileName, '.jpg') !== false || strpos($fileName, '.png') !== false ? 'image' : 'audio';
+                $foundInDb = $fileMedias->contains('name', $fileName);
+                if (!$foundInDb) {
+                    $fileType = (str_ends_with(strtolower($fileName), '.jpg') || str_ends_with(strtolower($fileName), '.png') || str_ends_with(strtolower($fileName), '.jpeg')) ? 'image' : 'audio';
                     Filemedia::create([
                         'name' => $fileName,
                         'type' => $fileType,
                         'active' => 1,
-                        'questionmedia_id' => null,
+                        'questionmedia_id' => null, // Will be updated in the next step
                     ]);
                     $addedFiles[] = $fileName;
                 }
             }
 
-            foreach ($fileMedias as $fileName => $fileMedia) {
-                if (!in_array($fileName, $existingFileNames)) {
+            // Re-fetch filemedias after adding new records to get the updated collection.
+            $fileMedias = Filemedia::all();
+
+            // Check for records in the database that are no longer on disk.
+            foreach ($fileMedias as $fileMedia) {
+                if (!in_array($fileMedia->name, $existingFileNames)) {
                     $fileMedia->delete();
-                    $deletedFiles[] = $fileName;
+                    $deletedFiles[] = $fileMedia->name;
                 }
             }
 
-            // Ambil ulang filemedias setelah proses sinkronisasi penyimpanan
-            $fileMedias = Filemedia::all()->keyBy('name');
+            // -- 3. Sinkronisasi Tabel Filemedia dengan Tabel Questionmedia --
+            // Sync `filemedia` records with `questionmedia` records based on the flags.
+            foreach ($fileMedias as $fileMedia) {
+                $fileNameWithoutExtension = pathinfo($fileMedia->name, PATHINFO_FILENAME);
 
-            // 4. Sinkronisasi Media Pertanyaan (Mirip syncFileMedia)
-            foreach ($fileMedias as $fileName => $fileMedia) {
-                $fileNameWithoutExtension = pathinfo($fileName, PATHINFO_FILENAME);
+                // Cek apakah ada questionmedia yang sesuai dengan nama file
+                // Check if there is a corresponding questionmedia for the filename
                 if (isset($questionMedias[$fileNameWithoutExtension])) {
-                    $fileMedia->questionmedia_id = $questionMedias[$fileNameWithoutExtension];
-                    $fileMedia->save();
-                    $updatedFiles[] = $fileName;
+                    $questionMedia = $questionMedias[$fileNameWithoutExtension];
+                    $isLinked = false;
+
+                    // Periksa apakah filemedia bertipe 'image' dan questionmedia.image = 1
+                    // Check if the filemedia is of type 'image' and questionmedia.image is 1
+                    if ($fileMedia->type === 'image' && $questionMedia->image) {
+                        $isLinked = true;
+                    }
+
+                    // Periksa apakah filemedia bertipe 'audio' dan questionmedia.audio = 1
+                    // Check if the filemedia is of type 'audio' and questionmedia.audio is 1
+                    if ($fileMedia->type === 'audio' && $questionMedia->audio) {
+                        $isLinked = true;
+                    }
+
+                    if ($isLinked) {
+                        // Jika koneksi valid, pastikan questionmedia_id terisi
+                        // If the connection is valid, ensure the questionmedia_id is set
+                        if ($fileMedia->questionmedia_id !== $questionMedia->id) {
+                            $fileMedia->questionmedia_id = $questionMedia->id;
+                            $fileMedia->save();
+                            if (!in_array($fileMedia->name, $addedFiles)) {
+                                $updatedFiles[] = $fileMedia->name;
+                            }
+                        }
+                    } else {
+                        // Jika koneksi tidak lagi valid (misal: flag image/audio diubah dari 1 ke 0)
+                        // If the connection is no longer valid (e.g., image/audio flag changed from 1 to 0)
+                        // Hapus file fisik dan record di database
+                        // Delete the physical file and the database record
+                        $filePath = ($fileMedia->type === 'image') ? $imageDirectory . '/' . $fileMedia->name : $audioDirectory . '/' . $fileMedia->name;
+                        if (File::exists($filePath)) {
+                            File::delete($filePath);
+                        }
+                        $fileMedia->delete();
+                        $deletedFiles[] = $fileMedia->name;
+                    }
                 } else {
-                    $filePath = ($fileMedia->type === 'image') ? $imageDirectory . '/' . $fileName : $audioDirectory . '/' . $fileName;
-                    if (file_exists($filePath)) {
-                        unlink($filePath);
+                    // Jika tidak ada questionmedia yang cocok sama sekali, hapus file dan record
+                    // If there is no matching questionmedia at all, delete the file and record
+                    $filePath = ($fileMedia->type === 'image') ? $imageDirectory . '/' . $fileMedia->name : $audioDirectory . '/' . $fileMedia->name;
+                    if (File::exists($filePath)) {
+                        File::delete($filePath);
                     }
                     $fileMedia->delete();
-                    $deletedFiles[] = $fileName;
+                    $deletedFiles[] = $fileMedia->name;
                 }
             }
 
-            // 5. Pencatatan Log
+            // -- 4. Pencatatan Log --
+            // Log the synchronization process.
             $synclog = Synclog::create([
                 'process_name' => 'filemedias',
                 'last_synced_at' => now(),
@@ -557,7 +604,8 @@ class MediaController extends Controller
                 'message' => count($addedFiles) . " data ditambahkan, " . count($updatedFiles) . " data diubah, dan " . count($deletedFiles) . " data dihapus."
             ]);
 
-            // 6. Pencatatan Log Detail
+            // -- 5. Pencatatan Log Detail --
+            // Log details of added, updated, and deleted files.
             if (!empty($addedFiles)) {
                 SynclogDetail::create([
                     'synclog_id' => $synclog->id,
@@ -580,12 +628,10 @@ class MediaController extends Controller
                 ]);
             }
 
-            // return response()->json([
-            //     'status' => 'success',
-            //     'message' => $synclog->message
-            // ]);
             return redirect()->back()->with('success', 'Sinkronisasi selesai.');
         } catch (\Exception $e) {
+            // -- 6. Penanganan Error --
+            // Error handling and logging.
             $synclog = Synclog::create([
                 'process_name' => 'filemedias',
                 'last_synced_at' => now(),
@@ -605,4 +651,132 @@ class MediaController extends Controller
             ], 500);
         }
     }
+
+    // public function synchronizeFile()
+    // {
+    //     try {
+    //         // Cek log sinkronisasi terakhir
+    //         $lastSync = Synclog::where('process_name', 'filemedias')->first();
+
+    //         if ($lastSync && $lastSync->last_synced_at > now()->subHour()) {
+    //             return response()->json([
+    //                 'status' => 'info',
+    //                 'message' => 'Sinkronisasi sudah dilakukan baru-baru ini, coba lagi nanti.'
+    //             ]);
+    //         }
+
+    //         // 1. Baca Direktori
+    //         $imageDirectory = public_path('uploads/image');
+    //         $audioDirectory = public_path('uploads/audio');
+    //         $existingFiles = array_merge(
+    //             File::files($imageDirectory),
+    //             File::files($audioDirectory)
+    //         );
+    //         $existingFileNames = array_map('basename', $existingFiles);
+
+    //         // 2. Ambil Data Database
+    //         $fileMedias = Filemedia::all()->keyBy('name');
+    //         $questionMedias = Questionmedia::pluck('id', 'guid');
+
+    //         $addedFiles = [];
+    //         $deletedFiles = [];
+    //         $updatedFiles = [];
+
+    //         // 3. Sinkronisasi Penyimpanan dan Database (Mirip syncFileStorage)
+    //         foreach ($existingFileNames as $fileName) {
+    //             if (!isset($fileMedias[$fileName])) {
+    //                 $fileType = strpos($fileName, '.jpg') !== false || strpos($fileName, '.png') !== false ? 'image' : 'audio';
+    //                 Filemedia::create([
+    //                     'name' => $fileName,
+    //                     'type' => $fileType,
+    //                     'active' => 1,
+    //                     'questionmedia_id' => null,
+    //                 ]);
+    //                 $addedFiles[] = $fileName;
+    //             }
+    //         }
+
+    //         foreach ($fileMedias as $fileName => $fileMedia) {
+    //             if (!in_array($fileName, $existingFileNames)) {
+    //                 $fileMedia->delete();
+    //                 $deletedFiles[] = $fileName;
+    //             }
+    //         }
+
+    //         // Ambil ulang filemedias setelah proses sinkronisasi penyimpanan
+    //         $fileMedias = Filemedia::all()->keyBy('name');
+
+    //         // 4. Sinkronisasi Media Pertanyaan (Mirip syncFileMedia)
+    //         foreach ($fileMedias as $fileName => $fileMedia) {
+    //             $fileNameWithoutExtension = pathinfo($fileName, PATHINFO_FILENAME);
+    //             if (isset($questionMedias[$fileNameWithoutExtension])) {
+    //                 $fileMedia->questionmedia_id = $questionMedias[$fileNameWithoutExtension];
+    //                 $fileMedia->save();
+    //                 $updatedFiles[] = $fileName;
+    //             } else {
+    //                 $filePath = ($fileMedia->type === 'image') ? $imageDirectory . '/' . $fileName : $audioDirectory . '/' . $fileName;
+    //                 if (file_exists($filePath)) {
+    //                     unlink($filePath);
+    //                 }
+    //                 $fileMedia->delete();
+    //                 $deletedFiles[] = $fileName;
+    //             }
+    //         }
+
+    //         // 5. Pencatatan Log
+    //         $synclog = Synclog::create([
+    //             'process_name' => 'filemedias',
+    //             'last_synced_at' => now(),
+    //             'status' => 'success',
+    //             'message' => count($addedFiles) . " data ditambahkan, " . count($updatedFiles) . " data diubah, dan " . count($deletedFiles) . " data dihapus."
+    //         ]);
+
+    //         // 6. Pencatatan Log Detail
+    //         if (!empty($addedFiles)) {
+    //             SynclogDetail::create([
+    //                 'synclog_id' => $synclog->id,
+    //                 'category' => 'added',
+    //                 'message' => 'Data ditambahkan: ' . implode(', ', $addedFiles) . '.'
+    //             ]);
+    //         }
+    //         if (!empty($deletedFiles)) {
+    //             SynclogDetail::create([
+    //                 'synclog_id' => $synclog->id,
+    //                 'category' => 'deleted',
+    //                 'message' => 'Data dihapus: ' . implode(', ', $deletedFiles) . '.'
+    //             ]);
+    //         }
+    //         if (!empty($updatedFiles)) {
+    //             SynclogDetail::create([
+    //                 'synclog_id' => $synclog->id,
+    //                 'category' => 'updated',
+    //                 'message' => 'Data diubah: ' . implode(', ', $updatedFiles) . '.'
+    //             ]);
+    //         }
+
+    //         // return response()->json([
+    //         //     'status' => 'success',
+    //         //     'message' => $synclog->message
+    //         // ]);
+    //         return redirect()->back()->with('success', 'Sinkronisasi selesai.');
+    //     } catch (\Exception $e) {
+    //         $synclog = Synclog::create([
+    //             'process_name' => 'filemedias',
+    //             'last_synced_at' => now(),
+    //             'status' => 'failed',
+    //             'message' => 'Terjadi kesalahan saat sinkronisasi file media: ' . $e->getMessage()
+    //         ]);
+
+    //         SynclogDetail::create([
+    //             'synclog_id' => $synclog->id,
+    //             'category' => 'error',
+    //             'message' => $e->getMessage()
+    //         ]);
+
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => $synclog->message
+    //         ], 500);
+    //     }
+    // }
 }

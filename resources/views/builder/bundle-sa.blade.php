@@ -5,7 +5,7 @@
     <div class="bg-white p-4 grid-cols-2 gap-8 rounded-lg shadow-xl py-8 mt-12">
         <!-- start:: Horizontal Form Layout -->
         <div>
-            <h4 class="text-xl capitalize">Design True or False Bundle Question</h4>
+            <h4 class="text-xl capitalize">Design Short Answer Bundle Question</h4>
             <div class="mt-6">
                 <form id="createForm" action="{{ route('builder.store_bundle_sa') }}" method="POST">
                     @csrf <!-- Token untuk keamanan CSRF -->

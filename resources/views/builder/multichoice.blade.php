@@ -7,7 +7,7 @@
         <div>
             <h4 class="text-xl capitalize">Design Multiple Choice Question</h4>
             <div class="mt-6">
-                <form id="createForm" action="{{ route('builder.store_multichoice') }}" method="POST">
+                <form id="createForm" action="{{ route('builder.store_multichoice') }}" method="POST" enctype="multipart/form-data">
                     @csrf <!-- Token untuk keamanan CSRF -->
 
                     <div class="flex flex-col my-4">
@@ -310,7 +310,7 @@
         id="answer_2"
         value="{{ old('answer_2') }}"
         class="flex-1 py-1 border-gray-300 mt-1 rounded focus:border-gray-300 focus:outline-none focus:ring-0"
-        placeholder="Write the choice option 2 for the question (opsional)"
+        placeholder="Write the choice option 2 for the question"
     >
     @error('answer_2')
         <p class="text-sm text-red-600 font-bold mt-2">{{ $message }}</p>
