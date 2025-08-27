@@ -212,9 +212,9 @@ class MediaController extends Controller
 
     public function synchronizeQuestion()
     {
-        if ($response = $this->checkLastSync('questionmedias')) {
-            return $response;
-        }
+        // if ($response = $this->checkLastSync('questionmedias')) {
+        //     return $response;
+        // }
 
         $spreadsheets = Spreadsheet::with('sheetnames')->get();
         $added = [];
@@ -271,9 +271,9 @@ class MediaController extends Controller
 
         $spreadsheet = Spreadsheet::with('sheetnames')->firstWhere('slug', $slug);
 
-        if ($response = $this->checkLastSync('questionmedias_all_sheet')) {
-            return $response;
-        }
+        // if ($response = $this->checkLastSync('questionmedias_all_sheet')) {
+        //     return $response;
+        // }
 
         $added = [];
         $deleted = [];
@@ -326,9 +326,9 @@ class MediaController extends Controller
     {
         $sheetname = Sheetname::with('spreadsheet')->firstWhere('slug', $slug);
 
-        if ($response = $this->checkLastSync('questionmedias_single_sheet')) {
-            return $response;
-        }
+        // if ($response = $this->checkLastSync('questionmedias_single_sheet')) {
+        //     return $response;
+        // }
 
         $result = $this->syncQuestionMedia($sheetname);
         $added = [];

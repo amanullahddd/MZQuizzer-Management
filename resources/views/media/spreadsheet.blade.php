@@ -47,8 +47,8 @@
                     <p> Data berikut memiliki file media yang kurang : </p>
                     <span>(Lakukan sinkronisasi filemedias lalu unggah file yang kurang)</span>
                     <dl class="mt-2">
-                        <dt class="font-semibold">Spreadsheets:</dt>
                         @foreach ($warningData as $data)
+                        <dt class="font-semibold">Spreadsheets:</dt>
                             <dd class="ml-4">
                                 {{ $data['spreadsheet']->title }}
                                 <dl class="mt-1">
